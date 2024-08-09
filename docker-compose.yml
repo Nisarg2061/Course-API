@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  courseapi:
+    container_name: courseapi
+    build: .
+    image: courseapi:latest
+    ports:
+      - "4000:4000"
+
