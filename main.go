@@ -38,13 +38,9 @@ func check(e error) {
 	}
 }
 
-// Middleware, helper files
 func IsEmpty(c *Course) bool {
 	return c.CourseName == ""
 }
-
-// Controllers file
-// Serve home route
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Welcome to API by me!<h1>"))
@@ -91,5 +87,6 @@ func main() {
 
 	fmt.Println("Listening on port 4000...")
 
-	server.ListenAndServe()
+	err := server.ListenAndServe()
+	check(err)
 }
