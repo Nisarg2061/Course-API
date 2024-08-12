@@ -73,6 +73,14 @@ func loadCourses() map[string]Course {
 	return res
 }
 
+func createCourse(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Body == nil {
+		json.NewEncoder(w).Encode("Enter valid data.")
+	}
+}
+
 func main() {
 	router := http.NewServeMux()
 
