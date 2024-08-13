@@ -1,8 +1,8 @@
 services:
-  courseapi:
-    container_name: courseapi
+  libraryapi:
+    container_name: libraryapi
     build: .
-    image: courseapi:latest
+    image: libraryapi:latest
     ports:
       - "4000:4000"
 
