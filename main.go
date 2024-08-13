@@ -3,16 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
 
 // Model for the file/database
-type Course struct {
-	CourseId    int     `json:"courseid"`
-	CourseName  string  `json:"coursename"`
-	CoursePrice float32 `json:"courseprice"`
-	Author      *Author `json:"author"`
+type Book struct {
+	BookId    int     `json:"bookid"`
+	BookName  string  `json:"bookname"`
+	BookPrice float32 `json:"bookprice"`
+	Author    *Author `json:"author"`
 }
 
 type Author struct {
@@ -21,16 +22,9 @@ type Author struct {
 }
 
 // Fake database
-var authors []Author = []Author{
-	{Fname: "Nisarg", Website: "bynisarg.in"},
-	{Fname: "Bhupendra", Website: "bybhupendra.in"},
-}
+var authors []Author
 
-var courses []Course = []Course{
-	{CourseId: 1, CourseName: "Golang", CoursePrice: 399.99, Author: &authors[1]},
-	{CourseId: 2, CourseName: "Docker", CoursePrice: 399.99, Author: &authors[0]},
-	{CourseId: 4, CourseName: "Python", CoursePrice: 399.99, Author: &authors[0]},
-}
+var books []Book
 
 func check(e error) {
 	if e != nil {
@@ -38,55 +32,107 @@ func check(e error) {
 	}
 }
 
-func IsEmpty(c *Course) bool {
-	return c.CourseName == ""
+func IsEmpty(c *Book) bool {
+	return c.BookName == ""
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Welcome to API by me!<h1>"))
 }
 
-func getAllCourses(w http.ResponseWriter, r *http.Request) {
+func getAllBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(courses)
+	json.NewEncoder(w).Encode(books)
 }
 
-func getCourse(w http.ResponseWriter, r *http.Request) {
+func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	course, exist := loadCourses()[r.PathValue("id")]
+	book, exist := loadBooks()[r.PathValue("id")]
 
 	if !exist {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	json.NewEncoder(w).Encode(course)
+	json.NewEncoder(w).Encode(book)
 }
 
-func loadCourses() map[string]Course {
-	res := make(map[string]Course, len(courses))
+func loadBooks() map[string]Book {
+	res := make(map[string]Book, len(books))
 
-	for _, x := range courses {
-		res[strconv.Itoa(x.CourseId)] = x
+	for _, x := range books {
+		res[strconv.Itoa(x.BookId)] = x
 	}
 
 	return res
 }
 
-func createCourse(w http.ResponseWriter, r *http.Request) {
+func createBook(w http.ResponseWriter, r *http.Request, param string) {
+	var book Book
+	_ = json.NewDecoder(r.Body).Decode(&book)
+	if IsEmpty(&book) {
+		json.NewEncoder(w).Encode("Enter valid data.")
+		return
+	}
+	if param == "" {
+		book.BookId = rand.Intn(100)
+	}
+	books = append(books, book)
+	json.NewEncoder(w).Encode(book)
+}
+
+func createBookRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Body == nil {
 		json.NewEncoder(w).Encode("Enter valid data.")
+	}
+
+	createBook(w, r, "")
+}
+
+func updateBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	param, err := strconv.Atoi(r.PathValue("id"))
+	p := r.PathValue("id")
+	check(err)
+	for i, j := range books {
+		if j.BookId == param {
+			books = append(books[:i], books[i+1:]...)
+			createBook(w, r, p)
+		}
+	}
+}
+
+func deleteBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "json/application")
+	param, err := strconv.Atoi(r.PathValue("id"))
+	check(err)
+	for i, j := range books {
+		if j.BookId == param {
+			books = append(books[:i], books[i+1:]...)
+			json.NewEncoder(w).Encode("Book Deleted")
+			break
+		}
 	}
 }
 
 func main() {
 	router := http.NewServeMux()
 
+	authors = append(authors, Author{Fname: "Nisarg", Website: "bynisarg.in"})
+	authors = append(authors, Author{Fname: "Bhupendra", Website: "bybhupendra.in"})
+
+	books = append(books, Book{BookId: 1, BookName: "Introduction to Golang", BookPrice: 399.99, Author: &authors[0]})
+	books = append(books, Book{BookId: 2, BookName: "Beginners Guide to JavaScript", BookPrice: 399.99, Author: &authors[1]})
+	books = append(books, Book{BookId: 3, BookName: "Getting Started with Docker", BookPrice: 399.99, Author: &authors[0]})
+
 	router.HandleFunc("GET /", serveHome)
-	router.HandleFunc("GET /courses", getAllCourses)
-	router.HandleFunc("GET /course/{id}", getCourse)
+	router.HandleFunc("GET /books", getAllBooks)
+	router.HandleFunc("GET /book/{id}", getBook)
+	router.HandleFunc("POST /book", createBookRoute)
+	router.HandleFunc("PUT /book/{id}", updateBook)
+	router.HandleFunc("DELETE /book/{id}", deleteBook)
 
 	server := http.Server{
 		Addr:    ":4000",
