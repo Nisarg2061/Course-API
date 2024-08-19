@@ -15,7 +15,7 @@ git clone https://github.com/Nisarg2061/Library-API.git
 ```
 2. Navigate to the project directory:
 ```
-cd LibraryAPI
+cd Library-API
 ```
 3. Run the project:
 ```
