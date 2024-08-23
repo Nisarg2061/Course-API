@@ -26,7 +26,7 @@ go run main.go
 If Docker and Docker Compose are installed, you can run the project using Docker. Follow these steps:
 1. Build and start the containers:
 ```
-sudo docker-compose up
+sudo docker-compose up -d
 ```
-This command will build the Docker images and start the containers as defined in the `docker-compose.yml` file.
+This command will build the Docker images and start the containers as defined in the `docker-compose.yml` file and run it in background.
 
