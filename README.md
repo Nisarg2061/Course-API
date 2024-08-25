@@ -1,6 +1,6 @@
 # Library API
 
-## Descritpion
+## Description
 Library API is a simple CRUD API developed in Go that manages books and authors. It organizes book and author data using structures and provides various endpoints to interact with this data.
 
 ## Features
